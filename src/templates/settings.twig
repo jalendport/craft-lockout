@@ -1,0 +1,41 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Lockout plugin for Craft CMS 3.x
+ *
+ * @author    Jalen Davenport
+ * @copyright Copyright (c) 2019 Jalen Davenport
+ * @link      https://jalendport.com
+ * @package   Lockout
+ * @since     1.0.0
+ */
+#}
+
+{% import "_includes/forms" as forms %}
+
+{% macro configWarning(setting) -%}
+    {% set setting = '<code>' ~ setting ~ '</code>' %}
+    {{ 'This is being overridden by the {setting} config setting in your {file} config file.'|t('stripe-checkout', {
+        setting: setting,
+        file:    'stripe-checkout.php'
+    })|raw }}
+{%- endmacro %}
+
+{{ forms.lightswitchField({
+    label: 'Enable Lockout?',
+    instructions: 'If this lightswitch is turned on, non-admin users will not be able to access the CP.',
+    id: 'enabled',
+    name: 'enabled',
+    on: localSettings.enabled
+}) }}
+
+{{ forms.textField({
+    label: 'Error Message',
+    instructions: 'This message will be displayed when non-admin users try to login while Lockout is enabled.',
+    placeholder: 'Access to the control panel is temporarily restricted.',
+    id: 'message',
+    name: 'message',
+    value: settings.message,
+    disabled: 'message' in overrides,
+    warning: 'message' in overrides ? _self.configWarning('message'),
+}) }}

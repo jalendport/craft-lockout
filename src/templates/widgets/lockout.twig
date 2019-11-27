@@ -1,0 +1,34 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Lockout plugin for Craft CMS
+ *
+ * @author    Jalen Davenport
+ * @copyright Copyright (c) 2019 Jalen Davenport
+ * @link      https://jalendport.com
+ * @package   Lockout
+ * @since     1.0.0
+ */
+#}
+
+<div class="lockout-container">
+
+	<div class="lockout-icon-container {% if localSettings.enabled %}enabled{% else %}disabled{% endif %}">
+
+		{{ svg(view.getAssetManager().getPublishedPath('@jalendport/lockout/assetbundles/lockoutwidget/dist', true) ~ '/img/LockoutWidget-icon.svg', class='lockout-icon') }}
+
+	</div>
+
+	<div class="lockout-content">
+
+		{% if localSettings.enabled %}
+			<h4>Enabled</h4>
+			<p>Click the lock icon to allow non-admin users to access the CP.</p>
+		{% else %}
+			<h4>Disabled</h4>
+			<p>Click the lock icon to restrict non-admin users from accessing the CP.</p>
+		{% endif %}
+
+	</div>
+
+</div>

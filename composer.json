@@ -1,0 +1,46 @@
+{
+    "name": "jalendport/craft-lockout",
+    "description": "Temporarily lock certain users out of the control panel.",
+    "type": "craft-plugin",
+    "version": "1.0.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "lockout",
+        "maintenance",
+        "admin",
+        "users"
+    ],
+    "support": {
+        "docs": "https://github.com/jalendport/craft-lockout/blob/master/README.md",
+        "issues": "https://github.com/jalendport/craft-lockout/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jalen Davenport",
+            "homepage": "https://jalendport.com"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0-RC1"
+    },
+    "autoload": {
+        "psr-4": {
+          "jalendport\\lockout\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Lockout",
+        "handle": "lockout",
+        "hasCpSettings": true,
+        "hasCpSection": false,
+        "changelogUrl": "https://raw.githubusercontent.com/lockout/lockout/master/CHANGELOG.md",
+        "components": {
+            "lockoutService": "jalendport\\lockout\\services\\LockoutService"
+        },
+        "class": "jalendport\\lockout\\Lockout"
+    }
+}

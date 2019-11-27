@@ -1,0 +1,53 @@
+/**
+ * Lockout plugin for Craft CMS
+ *
+ * LockoutWidget CSS
+ *
+ * @author    Jalen Davenport
+ * @copyright Copyright (c) 2019 Jalen Davenport
+ * @link      https://jalendport.com
+ * @package   Lockout
+ * @since     1.0.0
+ */
+
+.widget.jalendport\\lockout\\widgets\\lockoutwidget .lockout-container {
+	display: flex;
+	align-items: center;
+	margin-left: -12px;
+	margin-right: -12px;
+}
+
+.widget.jalendport\\lockout\\widgets\\lockoutwidget .lockout-container > * {
+	margin-left: 12px;
+	margin-right: 12px;
+}
+
+.widget.jalendport\\lockout\\widgets\\lockoutwidget .lockout-container .lockout-content h4 {
+	margin-bottom: 0;
+}
+
+.widget.jalendport\\lockout\\widgets\\lockoutwidget .lockout-container .lockout-content p {
+	margin-top: 3px;
+	color: #8f98a3;
+}
+
+.widget.jalendport\\lockout\\widgets\\lockoutwidget .lockout-icon-container {
+	display: flex;
+	justify-content: center;
+}
+
+.widget.jalendport\\lockout\\widgets\\lockoutwidget .lockout-icon-container.disabled {
+	color: #88909a;
+}
+
+.widget.jalendport\\lockout\\widgets\\lockoutwidget .lockout-icon-container.enabled {
+	color: #0d78f2;
+}
+
+div.jalendport\\lockout\\widgets\\lockoutwidget svg.lockout-icon {
+	fill: currentColor;
+	height: 2.5rem;
+	width: auto;
+	margin: 0 auto;
+	cursor: pointer;
+}
