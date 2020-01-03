@@ -96,7 +96,7 @@ class Lockout extends Plugin
 		);
   
 		// Check all CP requests
-		if (Craft::$app->getRequest()->isCpRequest)
+		if (Craft::$app->user->getIdentity() && Craft::$app->getRequest()->isCpRequest)
 		{
 			$this->lockoutService->check();
 		}
