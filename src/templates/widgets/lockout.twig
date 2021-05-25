@@ -15,7 +15,7 @@
 
 	<div class="lockout-icon-container {% if localSettings.enabled %}enabled{% else %}disabled{% endif %}">
 
-		{{ svg(view.getAssetManager().getPublishedPath('@jalendport/lockout/assetbundles/lockoutwidget/dist', true) ~ '/img/LockoutWidget-icon.svg', class='lockout-icon') }}
+		{{ svg(view.getAssetManager().getPublishedPath('@jalendport/lockout/assetbundles/lockoutwidget/dist', true) ~ '/img/LockoutWidget-icon.svg')|attr({class: 'lockout-icon'}) }}
 
 	</div>
 
