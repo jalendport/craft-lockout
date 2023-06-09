@@ -106,7 +106,7 @@ class Lockout extends Plugin
 	/**
 	 * @return Model|Settings|null
 	 */
-	protected function createSettingsModel()
+	protected function createSettingsModel(): ?\craft\base\Model
     {
         return new Settings();
     }

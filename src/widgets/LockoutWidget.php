@@ -65,7 +65,7 @@ class LockoutWidget extends Widget
     /**
      * @return string|bool
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@jalendport/lockout/assetbundles/lockoutwidget/dist/img/LockoutWidget-icon.svg');
     }
@@ -78,7 +78,7 @@ class LockoutWidget extends Widget
 	 * @throws SyntaxError
 	 * @throws InvalidConfigException
 	 */
-	public function getBodyHtml()
+	public function getBodyHtml(): ?string
     {
         Craft::$app->getView()->registerAssetBundle(LockoutWidgetAsset::class);
 
