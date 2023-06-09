@@ -1,6 +1,6 @@
 <?php
 /**
- * Lockout plugin for Craft CMS 3.x
+ * Lockout plugin for Craft CMS 4.x
  *
  * Temporarily lock certain users out of the control panel.
  *

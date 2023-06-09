@@ -1,6 +1,6 @@
 <?php
 /**
- * Lockout plugin for Craft CMS 3.x
+ * Lockout plugin for Craft CMS 4.x
  *
  * Temporarily lock certain users out of the control panel.
  *
@@ -22,7 +22,7 @@ use craft\db\ActiveRecord;
  */
 class LocalSettings extends ActiveRecord
 {
-	
+
 	/**
 	 * @return string
 	 */
@@ -30,5 +30,5 @@ class LocalSettings extends ActiveRecord
 	{
 		return '{{%lockout}}';
 	}
-	
+
 }

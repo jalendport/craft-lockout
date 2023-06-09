@@ -1,6 +1,6 @@
 <?php
 /**
- * Lockout plugin for Craft CMS 3.x
+ * Lockout plugin for Craft CMS 4.x
  *
  * Temporarily lock certain users out of the control panel.
  *
@@ -10,11 +10,10 @@
 
 namespace jalendport\lockout\services;
 
-use jalendport\lockout\Lockout;
-
 use Craft;
 use craft\base\Component;
-
+use jalendport\lockout\Lockout;
+use jalendport\lockout\models\Settings;
 use yii\web\ForbiddenHttpException;
 
 /**
@@ -24,7 +23,7 @@ use yii\web\ForbiddenHttpException;
  */
 class LockoutService extends Component
 {
-	
+
 	/**
 	 * @return bool
 	 * @throws ForbiddenHttpException
@@ -35,21 +34,22 @@ class LockoutService extends Component
 		{
 			return true;
 		}
-		
+
 		$localSettings = Lockout::$plugin->getLocalSettings();
+		/** @var Settings $settings */
 		$settings = Lockout::$plugin->getSettings();
-		
+
 		$message = $settings->message ?: 'Access to the control panel is temporarily restricted.';
-		
+
 		if ($localSettings->enabled)
 		{
 			throw new ForbiddenHttpException($message);
 		}
-		
+
 		return false;
 	}
-	
-	
+
+
 	/**
 	 * @return bool
 	 */
@@ -59,8 +59,8 @@ class LockoutService extends Component
 		$lockoutRecord->enabled = true;
 		return $lockoutRecord->save();
 	}
-	
-	
+
+
 	/**
 	 * @return bool
 	 */
@@ -70,5 +70,5 @@ class LockoutService extends Component
 		$lockoutRecord->enabled = false;
 		return $lockoutRecord->save();
 	}
-	
+
 }

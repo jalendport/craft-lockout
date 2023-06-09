@@ -1,6 +1,6 @@
 <?php
 /**
- * Lockout plugin for Craft CMS 3.x
+ * Lockout plugin for Craft CMS 4.x
  *
  * Temporarily lock certain users out of the control panel.
  *
@@ -19,9 +19,9 @@ use craft\base\Model;
  */
 class Settings extends Model
 {
-	
-	public $message = '';
-	
+
+	public string $message = '';
+
 	/**
 	 * @return array
 	 */
@@ -31,5 +31,5 @@ class Settings extends Model
         	['message', 'string']
         ];
     }
-    
+
 }

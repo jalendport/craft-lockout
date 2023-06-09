@@ -1,6 +1,6 @@
 <?php
 /**
- * Lockout plugin for Craft CMS 3.x
+ * Lockout plugin for Craft CMS 4.x
  *
  * Temporarily lock certain users out of the control panel.
  *
@@ -10,9 +10,8 @@
 
 namespace jalendport\lockout\controllers;
 
-use jalendport\lockout\Lockout;
-
 use craft\web\Controller;
+use jalendport\lockout\Lockout;
 
 /**
  * @author    Jalen Davenport
@@ -21,7 +20,7 @@ use craft\web\Controller;
  */
 class EnableController extends Controller
 {
-	
+
 	/**
 	 * @return bool
 	 */
@@ -29,5 +28,5 @@ class EnableController extends Controller
 	{
 		return Lockout::$plugin->lockoutService->enable();
     }
-    
+
 }

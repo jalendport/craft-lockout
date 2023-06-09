@@ -1,6 +1,6 @@
 <?php
 /**
- * Lockout plugin for Craft CMS 3.x
+ * Lockout plugin for Craft CMS 4.x
  *
  * Temporarily lock certain users out of the control panel.
  *
@@ -20,15 +20,15 @@ use craft\web\assets\cp\CpAsset;
  */
 class LockoutWidgetAsset extends AssetBundle
 {
-	
-	public function init()
-    {
+
+	public function init(): void
+	{
         $this->sourcePath = '@jalendport/lockout/assetbundles/lockoutwidget/dist';
-        
+
         $this->depends = [
             CpAsset::class,
         ];
-        
+
         $this->js = [
             'js/LockoutWidget.js',
         ];
@@ -39,5 +39,5 @@ class LockoutWidgetAsset extends AssetBundle
 
         parent::init();
     }
-    
+
 }
