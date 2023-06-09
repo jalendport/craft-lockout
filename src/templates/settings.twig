@@ -1,7 +1,7 @@
 {# @var craft \craft\web\twig\variables\CraftVariable #}
 {#
 /**
- * Lockout plugin for Craft CMS 3.x
+ * Lockout plugin for Craft CMS 4.x
  *
  * @author    Jalen Davenport
  * @copyright Copyright (c) 2019 Jalen Davenport
@@ -15,10 +15,7 @@
 
 {% macro configWarning(setting) -%}
     {% set setting = '<code>' ~ setting ~ '</code>' %}
-    {{ 'This is being overridden by the {setting} config setting in your {file} config file.'|t('stripe-checkout', {
-        setting: setting,
-        file:    'stripe-checkout.php'
-    })|raw }}
+    {{ "This is being overridden by the #{setting} config setting in your lockout.php config file."|raw }}
 {%- endmacro %}
 
 {{ forms.lightswitchField({

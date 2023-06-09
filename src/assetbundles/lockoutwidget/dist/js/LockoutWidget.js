@@ -1,5 +1,5 @@
 /**
- * Lockout plugin for Craft CMS
+ * Lockout plugin for Craft CMS 4.x
  *
  * LockoutWidget JS
  *
@@ -15,12 +15,14 @@ var icon = iconContainer.querySelector('svg.lockout-icon');
 
 icon.addEventListener("click", function(){
 	if (iconContainer.classList.contains('disabled')) {
-		Craft.postActionRequest('lockout/enable', [], function() {
-			location.reload();
-		});
+		Craft.sendActionRequest('POST', 'lockout/enable', {})
+			.then((response) => {
+				location.reload();
+			});
 	} else if (iconContainer.classList.contains('enabled')) {
-		Craft.postActionRequest('lockout/disable', [], function() {
-			location.reload();
-		});
+		Craft.sendActionRequest('POST', 'lockout/disable', {})
+			.then((response) => {
+				location.reload();
+			});
 	}
 });

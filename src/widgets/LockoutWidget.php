@@ -1,6 +1,6 @@
 <?php
 /**
- * Lockout plugin for Craft CMS 3.x
+ * Lockout plugin for Craft CMS 4.x
  *
  * Temporarily lock certain users out of the control panel.
  *
@@ -10,16 +10,14 @@
 
 namespace jalendport\lockout\widgets;
 
-use jalendport\lockout\Lockout;
-use jalendport\lockout\assetbundles\lockoutwidget\LockoutWidgetAsset;
-
 use Craft;
 use craft\base\Widget;
-
+use jalendport\lockout\Lockout;
+use jalendport\lockout\assetbundles\lockoutwidget\LockoutWidgetAsset;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
@@ -31,7 +29,7 @@ use yii\base\InvalidConfigException;
  */
 class LockoutWidget extends Widget
 {
- 
+
 	/**
 	 * @return string
 	 */
@@ -39,8 +37,8 @@ class LockoutWidget extends Widget
     {
         return 'Lockout';
     }
-	
-    
+
+
 	/**
 	 * @return bool
 	 */
@@ -48,11 +46,11 @@ class LockoutWidget extends Widget
 	{
 		$userIsAdmin = Craft::$app->user->getIsAdmin();
 		$userAlreadyHasWidget = Craft::$app->getDashboard()->doesUserHaveWidget(static::class);
-		
+
 		return ($userIsAdmin && !$userAlreadyHasWidget);
 	}
-	
-	
+
+
 	/**
 	 * @return bool
 	 */
@@ -61,24 +59,25 @@ class LockoutWidget extends Widget
 		return false;
 	}
 
-	
-    /**
-     * @return string|bool
-     */
-    public static function icon()
+
+	/**
+	 * @return string|null
+	 */
+    public static function icon(): ?string
     {
         return Craft::getAlias('@jalendport/lockout/assetbundles/lockoutwidget/dist/img/LockoutWidget-icon.svg');
     }
-	
-	
+
+
 	/**
-	 * @return false|string
+	 * @return string|null
+	 * @throws InvalidConfigException
 	 * @throws LoaderError
 	 * @throws RuntimeError
 	 * @throws SyntaxError
-	 * @throws InvalidConfigException
+	 * @throws Exception
 	 */
-	public function getBodyHtml()
+	public function getBodyHtml(): ?string
     {
         Craft::$app->getView()->registerAssetBundle(LockoutWidgetAsset::class);
 
@@ -89,5 +88,5 @@ class LockoutWidget extends Widget
             ]
         );
     }
-    
+
 }

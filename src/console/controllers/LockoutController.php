@@ -1,6 +1,6 @@
 <?php
 /**
- * Lockout plugin for Craft CMS 3.x
+ * Lockout plugin for Craft CMS 4.x
  *
  * Temporarily lock certain users out of the control panel.
  *
@@ -11,7 +11,6 @@
 namespace jalendport\lockout\console\controllers;
 
 use jalendport\lockout\Lockout;
-
 use yii\console\Controller;
 
 /**
@@ -23,7 +22,7 @@ use yii\console\Controller;
  */
 class LockoutController extends Controller
 {
-	
+
 	/**
 	 * Restrict non-admin users from accessing the CP.
 	 *
@@ -33,8 +32,8 @@ class LockoutController extends Controller
 	{
 		return (int)Lockout::$plugin->lockoutService->enable();
 	}
-	
-	
+
+
 	/**
 	 * Allow non-admin users to access the CP.
 	 *
