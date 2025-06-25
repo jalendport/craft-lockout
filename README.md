@@ -6,7 +6,7 @@ _Temporarily lock certain users out of the control panel._
 
 ### Requirements
 
-This plugin requires Craft CMS 4.0.0 or later.
+This plugin requires Craft CMS 5.0.0 or later.
 
 ### Plugin Store
 
