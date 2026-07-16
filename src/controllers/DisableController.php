@@ -20,13 +20,11 @@ use jalendport\lockout\Lockout;
  */
 class DisableController extends Controller
 {
-
-	/**
-	 * @return bool
-	 */
-	public function actionIndex(): bool
-	{
-		return Lockout::$plugin->lockoutService->disable();
-	}
-
+    /**
+     * @return bool
+     */
+    public function actionIndex(): bool
+    {
+        return Lockout::$plugin->lockoutService->disable();
+    }
 }

@@ -39,24 +39,47 @@ use yii\web\HttpException;
  */
 class Lockout extends Plugin
 {
-
-	/**
-	 * @var Lockout
-	 */
+    /**
+     * @var Lockout
+     */
     public static $plugin;
 
+    /**
+     * @var bool Whether the plugin has a settings page in the control panel.
+     */
+    public bool $hasCpSettings = true;
 
-	/**
-	 * @throws HttpException
-	 * @throws \Throwable
-	 */
-	public function init(): void
-	{
+    /**
+     * @var string The plugin's schema version.
+     */
+    public string $schemaVersion = '1.0.0';
+
+
+    /**
+     * Registers the plugin's components per the Craft 5 plugin spec.
+     *
+     * @return array<string, mixed>
+     */
+    public static function config(): array
+    {
+        return [
+            'components' => [
+                'lockoutService' => LockoutService::class,
+            ],
+        ];
+    }
+
+
+    /**
+     * @throws HttpException
+     * @throws \Throwable
+     */
+    public function init(): void
+    {
         parent::init();
         self::$plugin = $this;
 
-        if (Craft::$app instanceof ConsoleApplication)
-        {
+        if (Craft::$app instanceof ConsoleApplication) {
             $this->controllerNamespace = 'jalendport\lockout\console\controllers';
         }
 
@@ -64,97 +87,93 @@ class Lockout extends Plugin
         Event::on(
             Dashboard::class,
             Dashboard::EVENT_REGISTER_WIDGET_TYPES,
-			static function (RegisterComponentTypesEvent $event)
-			{
+            static function(RegisterComponentTypesEvent $event) {
                 $event->types[] = LockoutWidget::class;
             }
         );
 
         // Save our local settings
-		Event::on(
-			__CLASS__,
-			self::EVENT_BEFORE_SAVE_SETTINGS,
-			static function()
-			{
-				$enabled = Craft::$app->request->getBodyParam('settings')['enabled'];
-				if ($enabled) {
-					self::$plugin->lockoutService->enable();
-				} else {
-					self::$plugin->lockoutService->disable();
-				}
-			}
-		);
+        Event::on(
+            __CLASS__,
+            self::EVENT_BEFORE_SAVE_SETTINGS,
+            static function() {
+                $enabled = Craft::$app->request->getBodyParam('settings')['enabled'];
+                if ($enabled) {
+                    self::$plugin->lockoutService->enable();
+                } else {
+                    self::$plugin->lockoutService->disable();
+                }
+            }
+        );
 
-		// Redirect back to the plugin settings page
-		Event::on(
-			__CLASS__,
-			self::EVENT_AFTER_SAVE_SETTINGS,
-			static function () {
-				Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('settings/plugins/lockout'))->send();
-			}
-		);
+        // Redirect back to the plugin settings page
+        Event::on(
+            __CLASS__,
+            self::EVENT_AFTER_SAVE_SETTINGS,
+            static function() {
+                Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('settings/plugins/lockout'))->send();
+            }
+        );
 
-		// Check all CP requests
-		if (Craft::$app->user->getIdentity() && Craft::$app->getRequest()->isCpRequest)
-		{
-			$this->lockoutService->check();
-		}
+        // Check all CP requests
+        if (Craft::$app->user->getIdentity() && Craft::$app->getRequest()->isCpRequest) {
+            $this->lockoutService->check();
+        }
     }
 
 
-	/**
-	 * @return Model|null
-	 */
-	protected function createSettingsModel(): ?Model
+    /**
+     * @return Model|null
+     */
+    protected function createSettingsModel(): ?Model
     {
         return new Settings();
     }
 
 
-	/**
-	 * @return LocalSettings
-	 */
-	public function getLocalSettings(): LocalSettings
-	{
-		$lockoutRecord = LocalSettings::findOne([
-			'environment' => Craft::$app->getConfig()->env
-		]);
-
-		if ($lockoutRecord === null) {
-			$lockoutRecord = new LocalSettings();
-		}
-
-		$lockoutRecord->environment = Craft::$app->getConfig()->env;
-
-		return $lockoutRecord;
-	}
-
-
-	/**
-	 * @return string
-	 * @throws LoaderError
-	 * @throws RuntimeError
-	 * @throws SyntaxError
-	 * @throws Exception
-	 */
-	protected function settingsHtml(): string
+    /**
+     * @return LocalSettings
+     */
+    public function getLocalSettings(): LocalSettings
     {
-		$settings = $this->getSettings();
-		$settings->validate();
+        $lockoutRecord = LocalSettings::findOne([
+            'environment' => Craft::$app->getConfig()->env,
+        ]);
 
-		$localSettings = $this->getLocalSettings();
-		$localSettings->validate();
+        if ($lockoutRecord === null) {
+            $lockoutRecord = new LocalSettings();
+        }
 
-		$overrides = Craft::$app->getConfig()->getConfigFromFile(strtolower($this->handle));
+        $lockoutRecord->environment = Craft::$app->getConfig()->env;
+
+        return $lockoutRecord;
+    }
+
+
+    /**
+     * @return string
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
+     */
+    protected function settingsHtml(): string
+    {
+        $settings = $this->getSettings();
+        $settings->validate();
+
+        $localSettings = $this->getLocalSettings();
+        $localSettings->validate();
+
+        $overrides = Craft::$app->getConfig()->getConfigFromFile(strtolower($this->handle));
 
         return Craft::$app->view->renderTemplate(
             'lockout/settings',
             [
                 'settings' => $settings,
-				'localSettings' => $this->getLocalSettings(),
-				'overrides' => array_keys($overrides),
+                'localSettings' => $this->getLocalSettings(),
+                'overrides' => array_keys($overrides),
             ]
         );
     }
-
 }

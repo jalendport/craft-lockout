@@ -20,7 +20,6 @@ use craft\db\Migration;
  */
 class Install extends Migration
 {
-
     /**
      * @return bool
      */
@@ -60,12 +59,12 @@ class Install extends Migration
             $this->createTable(
                 '{{%lockout}}',
                 [
-                  	'id' => $this->primaryKey(),
-					'environment' => $this->string()->notNull()->defaultValue(''),
+                      'id' => $this->primaryKey(),
+                    'environment' => $this->string()->notNull()->defaultValue(''),
                     'enabled' => $this->boolean()->notNull()->defaultValue(false),
-					'dateCreated' => $this->dateTime()->notNull(),
-					'dateUpdated' => $this->dateTime()->notNull(),
-					'uid' => $this->uid(),
+                    'dateCreated' => $this->dateTime()->notNull(),
+                    'dateUpdated' => $this->dateTime()->notNull(),
+                    'uid' => $this->uid(),
                 ]
             );
         }
@@ -78,7 +77,7 @@ class Install extends Migration
      * @return void
      */
     protected function removeTables(): void
-	{
+    {
         $this->dropTableIfExists('{{%lockout}}');
     }
 }

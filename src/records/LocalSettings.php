@@ -22,13 +22,11 @@ use craft\db\ActiveRecord;
  */
 class LocalSettings extends ActiveRecord
 {
-
-	/**
-	 * @return string
-	 */
-	public static function tableName(): string
-	{
-		return '{{%lockout}}';
-	}
-
+    /**
+     * @return string
+     */
+    public static function tableName(): string
+    {
+        return '{{%lockout}}';
+    }
 }

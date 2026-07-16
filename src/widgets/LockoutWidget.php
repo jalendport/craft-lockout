@@ -12,8 +12,8 @@ namespace jalendport\lockout\widgets;
 
 use Craft;
 use craft\base\Widget;
-use jalendport\lockout\Lockout;
 use jalendport\lockout\assetbundles\lockoutwidget\LockoutWidgetAsset;
+use jalendport\lockout\Lockout;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -29,64 +29,62 @@ use yii\base\InvalidConfigException;
  */
 class LockoutWidget extends Widget
 {
-
-	/**
-	 * @return string
-	 */
-	public static function displayName(): string
+    /**
+     * @return string
+     */
+    public static function displayName(): string
     {
         return 'Lockout';
     }
 
 
-	/**
-	 * @return bool
-	 */
-	public static function isSelectable(): bool
-	{
-		$userIsAdmin = Craft::$app->user->getIsAdmin();
-		$userAlreadyHasWidget = Craft::$app->getDashboard()->doesUserHaveWidget(static::class);
+    /**
+     * @return bool
+     */
+    public static function isSelectable(): bool
+    {
+        $userIsAdmin = Craft::$app->user->getIsAdmin();
+        $userAlreadyHasWidget = Craft::$app->getDashboard()->doesUserHaveWidget(static::class);
 
-		return ($userIsAdmin && !$userAlreadyHasWidget);
-	}
-
-
-	/**
-	 * @return bool
-	 */
-	protected static function allowMultipleInstances(): bool
-	{
-		return false;
-	}
+        return ($userIsAdmin && !$userAlreadyHasWidget);
+    }
 
 
-	/**
-	 * @return string|null
-	 */
+    /**
+     * @return bool
+     */
+    protected static function allowMultipleInstances(): bool
+    {
+        return false;
+    }
+
+
+    /**
+     * @return string|null
+     */
     public static function icon(): ?string
     {
         return Craft::getAlias('@jalendport/lockout/assetbundles/lockoutwidget/dist/img/LockoutWidget-icon.svg');
     }
 
 
-	/**
-	 * @return string|null
-	 * @throws InvalidConfigException
-	 * @throws LoaderError
-	 * @throws RuntimeError
-	 * @throws SyntaxError
-	 * @throws Exception
-	 */
-	public function getBodyHtml(): ?string
+    /**
+     * @return string|null
+     * @throws InvalidConfigException
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
+     */
+    public function getBodyHtml(): ?string
     {
         Craft::$app->getView()->registerAssetBundle(LockoutWidgetAsset::class);
 
         return Craft::$app->getView()->renderTemplate(
             'lockout/widgets/lockout',
             [
-				'localSettings' => Lockout::$plugin->getLocalSettings(),
+                'localSettings' => Lockout::$plugin->getLocalSettings(),
             ]
         );
     }
-
 }

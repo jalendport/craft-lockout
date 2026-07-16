@@ -22,26 +22,24 @@ use yii\console\Controller;
  */
 class LockoutController extends Controller
 {
+    /**
+     * Restrict non-admin users from accessing the CP.
+     *
+     * @return bool
+     */
+    public function actionEnable(): bool
+    {
+        return (int)Lockout::$plugin->lockoutService->enable();
+    }
 
-	/**
-	 * Restrict non-admin users from accessing the CP.
-	 *
-	 * @return bool
-	 */
-	public function actionEnable(): bool
-	{
-		return (int)Lockout::$plugin->lockoutService->enable();
-	}
 
-
-	/**
-	 * Allow non-admin users to access the CP.
-	 *
-	 * @return bool
-	 */
-	public function actionDisable(): bool
-	{
-		return (int)Lockout::$plugin->lockoutService->disable();
-	}
-
+    /**
+     * Allow non-admin users to access the CP.
+     *
+     * @return bool
+     */
+    public function actionDisable(): bool
+    {
+        return (int)Lockout::$plugin->lockoutService->disable();
+    }
 }

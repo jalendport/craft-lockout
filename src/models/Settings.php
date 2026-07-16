@@ -19,17 +19,15 @@ use craft\base\Model;
  */
 class Settings extends Model
 {
+    public string $message = '';
 
-	public string $message = '';
-
-	/**
-	 * @return array
-	 */
-	public function rules(): array
+    /**
+     * @return array
+     */
+    public function rules(): array
     {
         return [
-        	['message', 'string']
+            ['message', 'string'],
         ];
     }
-
 }

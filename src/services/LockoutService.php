@@ -23,52 +23,48 @@ use yii\web\ForbiddenHttpException;
  */
 class LockoutService extends Component
 {
+    /**
+     * @return bool
+     * @throws ForbiddenHttpException
+     */
+    public function check(): bool
+    {
+        if (Craft::$app->user->getIsAdmin()) {
+            return true;
+        }
 
-	/**
-	 * @return bool
-	 * @throws ForbiddenHttpException
-	 */
-	public function check(): bool
-	{
-		if (Craft::$app->user->getIsAdmin())
-		{
-			return true;
-		}
+        $localSettings = Lockout::$plugin->getLocalSettings();
+        /** @var Settings $settings */
+        $settings = Lockout::$plugin->getSettings();
 
-		$localSettings = Lockout::$plugin->getLocalSettings();
-		/** @var Settings $settings */
-		$settings = Lockout::$plugin->getSettings();
+        $message = $settings->message ?: 'Access to the control panel is temporarily restricted.';
 
-		$message = $settings->message ?: 'Access to the control panel is temporarily restricted.';
+        if ($localSettings->enabled) {
+            throw new ForbiddenHttpException($message);
+        }
 
-		if ($localSettings->enabled)
-		{
-			throw new ForbiddenHttpException($message);
-		}
-
-		return false;
-	}
+        return false;
+    }
 
 
-	/**
-	 * @return bool
-	 */
-	public function enable(): bool
-	{
-		$lockoutRecord = Lockout::$plugin->getLocalSettings();
-		$lockoutRecord->enabled = true;
-		return $lockoutRecord->save();
-	}
+    /**
+     * @return bool
+     */
+    public function enable(): bool
+    {
+        $lockoutRecord = Lockout::$plugin->getLocalSettings();
+        $lockoutRecord->enabled = true;
+        return $lockoutRecord->save();
+    }
 
 
-	/**
-	 * @return bool
-	 */
-	public function disable(): bool
-	{
-		$lockoutRecord = Lockout::$plugin->getLocalSettings();
-		$lockoutRecord->enabled = false;
-		return $lockoutRecord->save();
-	}
-
+    /**
+     * @return bool
+     */
+    public function disable(): bool
+    {
+        $lockoutRecord = Lockout::$plugin->getLocalSettings();
+        $lockoutRecord->enabled = false;
+        return $lockoutRecord->save();
+    }
 }

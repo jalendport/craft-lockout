@@ -2,7 +2,6 @@
     "name": "jalendport/craft-lockout",
     "description": "Temporarily lock certain users out of the control panel.",
     "type": "craft-plugin",
-    "version": "3.0.0-beta.1",
     "keywords": [
         "craft",
         "cms",
@@ -13,34 +12,66 @@
         "admin",
         "users"
     ],
-    "support": {
-        "docs": "https://github.com/jalendport/craft-lockout/blob/master/README.md",
-        "issues": "https://github.com/jalendport/craft-lockout/issues"
-    },
-    "license": "MIT",
+    "license": "mit",
     "authors": [
         {
             "name": "Jalen Davenport",
             "homepage": "https://jalendport.com"
         }
     ],
+    "support": {
+        "email": "hello@jalendport.com",
+        "issues": "https://github.com/jalendport/craft-lockout/issues?state=open",
+        "source": "https://github.com/jalendport/craft-lockout",
+        "docs": "https://github.com/jalendport/craft-lockout/blob/master/README.md",
+        "rss": "https://github.com/jalendport/craft-lockout/releases.atom"
+    },
     "require": {
-        "craftcms/cms": "^5.0.0"
+        "php": "^8.2",
+        "craftcms/cms": "^5.0.0",
+        "jalendport/craft-base": "^1.1.1"
+    },
+    "require-dev": {
+        "craftcms/ecs": "dev-main",
+        "craftcms/phpstan": "dev-main",
+        "craftcms/rector": "dev-main",
+        "pestphp/pest": "^3.0"
     },
     "autoload": {
         "psr-4": {
-          "jalendport\\lockout\\": "src/"
+            "jalendport\\lockout\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "jalendport\\lockout\\tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "platform": {
+            "php": "8.2"
+        },
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "yiisoft/yii2-composer": true,
+            "craftcms/plugin-installer": true
+        }
+    },
+    "scripts": {
+        "check-cs": "ecs check --ansi",
+        "fix-cs": "ecs check --ansi --fix",
+        "phpstan": "phpstan --memory-limit=1G",
+        "test": "pest"
     },
     "extra": {
         "name": "Lockout",
         "handle": "lockout",
-        "hasCpSettings": true,
-        "hasCpSection": false,
-        "changelogUrl": "https://raw.githubusercontent.com/lockout/lockout/master/CHANGELOG.md",
-        "components": {
-            "lockoutService": "jalendport\\lockout\\services\\LockoutService"
-        },
+        "developer": "Jalen Davenport",
+        "documentationUrl": "https://github.com/jalendport/craft-lockout/blob/master/README.md",
+        "changelogUrl": "https://raw.githubusercontent.com/jalendport/craft-lockout/master/CHANGELOG.md",
         "class": "jalendport\\lockout\\Lockout"
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
