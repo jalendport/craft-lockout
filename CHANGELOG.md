@@ -19,7 +19,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - Replaced the dashboard widget and settings-page toggle with the Lockout utility
-- Replaced the plugin icon
 
 ## 3.0.0-beta.2 - 2026-07-22
 
