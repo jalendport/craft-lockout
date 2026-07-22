@@ -76,7 +76,7 @@ class Lockout extends Utility
      */
     public static function icon(): ?string
     {
-        return Craft::getAlias('@lockout/icon.svg') ?: null;
+        return Craft::getAlias('@lockout/icon-mask.svg') ?: null;
     }
 
     /**
