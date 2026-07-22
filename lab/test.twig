@@ -1,0 +1,57 @@
+{% set plugin = craft.app.plugins.getPlugin('lockout') %}
+{% set service = plugin ? plugin.lockout : null %}
+{% set settings = plugin ? plugin.settings : null %}
+
+{# Front-end requests are never blocked by Lockout (it guards the CP only),
+   so this page stays reachable while a lockout is active — that in itself
+   is part of the smoke test. #}
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Lockout smoke test</title>
+	</head>
+	<body>
+		<h1>Lockout smoke test</h1>
+		<dl>
+			<dt>plugin installed</dt>
+			<dd>{{ plugin ? 'PASS' : 'FAIL' }}</dd>
+
+			<dt>plugin version</dt>
+			<dd>{{ plugin ? plugin.version : 'n/a' }}</dd>
+
+			<dt>service resolves</dt>
+			<dd>{{ service ? 'PASS' : 'FAIL' }}</dd>
+
+			<dt>enabled</dt>
+			<dd>{{ service ? (service.isEnabled ? 'yes' : 'no') : 'n/a' }}</dd>
+
+			<dt>state source</dt>
+			<dd>{{ service ? service.source : 'n/a' }}</dd>
+
+			<dt>config override</dt>
+			<dd>{{ service ? (service.configOverride is null ? 'null' : (service.configOverride ? 'true' : 'false')) : 'n/a' }}</dd>
+
+			<dt>headline (editable in CP)</dt>
+			<dd>{{ settings ? settings.headline : 'n/a' }}</dd>
+
+			<dt>message (expect config override: “Back after the deploy.”)</dt>
+			<dd>{{ settings ? settings.message : 'n/a' }}</dd>
+
+			<dt>status code (expect config override: 503)</dt>
+			<dd>{{ settings ? settings.statusCode : 'n/a' }}</dd>
+
+			<dt>custom template</dt>
+			<dd>{{ settings and settings.template ? settings.template : 'none' }}</dd>
+
+			<dt>permission handles</dt>
+			<dd>{{ service ? constant('jalendport\\lockout\\services\\Lockout::PERMISSION_MANAGE') ~ ', ' ~ constant('jalendport\\lockout\\services\\Lockout::PERMISSION_BYPASS') : 'n/a' }}</dd>
+
+			<dt>front end reachable while locked</dt>
+			<dd>PASS</dd>
+		</dl>
+
+		<p>CP checks: sign in as <code>admin</code>/<code>password</code>, open Utilities → Lockout, toggle it, then sign in as <code>editor@lab.test</code> in a private window to see the lock screen (expect a 503 with the configured message).</p>
+	</body>
+</html>
