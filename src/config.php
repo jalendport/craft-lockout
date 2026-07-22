@@ -22,7 +22,20 @@ return [
     // from an env var: 'enabled' => App::env('LOCKOUT_ENABLED').
     'enabled' => null,
 
-    // The message shown to locked-out users. Leave empty for the default,
+    // The lock screen's headline. Leave empty for the default,
+    // "Control panel locked".
+    'headline' => '',
+
+    // The lock screen's message. Leave empty for the default,
     // "Access to the control panel is temporarily restricted."
     'message' => '',
+
+    // The HTTP status locked-out requests are answered with: 403 (the default)
+    // or 503. A 503 also sends a Retry-After header, built from Craft's own
+    // retryDuration setting.
+    'statusCode' => 403,
+
+    // A site template to render in place of the stock lock screen. It's handed
+    // `headline` and `message` variables. Leave null for the stock screen.
+    'template' => null,
 ];

@@ -15,9 +15,17 @@ use craft\base\Component;
 use craft\helpers\Json;
 use craft\web\Application as WebApplication;
 use craft\web\Request as WebRequest;
+use craft\web\ServiceUnavailableHttpException;
+use craft\web\View;
 use jalendport\lockout\Lockout;
+use jalendport\lockout\models\Settings;
 use jalendport\lockout\records\LocalSettings;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use yii\base\Action;
+use yii\base\Exception;
+use yii\base\ExitException;
 use yii\web\ForbiddenHttpException;
 
 /**
@@ -108,35 +116,6 @@ class LockoutService extends Component
     // =========================================================================
 
     /**
-     * Throws if the current user is locked out.
-     *
-     * @return bool `true` when the user bypasses Lockout, `false` when it's off
-     * @throws ForbiddenHttpException if the user is locked out
-     * @author Jalen Davenport <hello@jalendport.com>
-     * @since 1.0.0
-     */
-    public function check(): bool
-    {
-        /** @var WebApplication $app */
-        $app = Craft::$app;
-
-        // checkPermission() already lets admins through; the explicit check
-        // keeps that guarantee if the permission is ever revoked or renamed.
-        if ($app->getUser()->getIsAdmin() || $app->getUser()->checkPermission(self::PERMISSION_BYPASS)) {
-            return true;
-        }
-
-        if (!$this->getIsEnabled()) {
-            return false;
-        }
-
-        $message = Lockout::$plugin->getSettings()->message
-            ?: Craft::t('lockout', 'Access to the control panel is temporarily restricted.');
-
-        throw new ForbiddenHttpException($message);
-    }
-
-    /**
      * Blocks the given CP action if the current user is locked out.
      *
      * Runs off `Controller::EVENT_BEFORE_ACTION` rather than the plugin's
@@ -144,7 +123,13 @@ class LockoutService extends Component
      * can be let through.
      *
      * @param Action $action the action about to run
-     * @throws ForbiddenHttpException if the user is locked out
+     * @throws ForbiddenHttpException if the user is locked out of a JSON request
+     * @throws ServiceUnavailableHttpException if the same, with a 503 configured
+     * @throws ExitException if the lock screen was sent
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
      * @author Jalen Davenport <hello@jalendport.com>
      * @since 3.0.0
      */
@@ -168,7 +153,11 @@ class LockoutService extends Component
             return;
         }
 
-        $this->check();
+        if (!$this->getIsBlocked()) {
+            return;
+        }
+
+        $this->_sendLockScreen();
     }
 
     /**
@@ -210,6 +199,29 @@ class LockoutService extends Component
         }
 
         return Lockout::$plugin->getSettings()->enabled;
+    }
+
+    /**
+     * Returns whether the current user is being locked out right now.
+     *
+     * Admins and holders of the bypass permission never are.
+     *
+     * @return bool whether the user is locked out
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
+     */
+    public function getIsBlocked(): bool
+    {
+        if (!$this->getIsEnabled()) {
+            return false;
+        }
+
+        /** @var WebApplication $app */
+        $app = Craft::$app;
+
+        // checkPermission() already lets admins through; the explicit check
+        // keeps that guarantee if the permission is ever revoked or renamed.
+        return !$app->getUser()->getIsAdmin() && !$app->getUser()->checkPermission(self::PERMISSION_BYPASS);
     }
 
     /**
@@ -264,6 +276,88 @@ class LockoutService extends Component
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Renders the lock screen's body: the configured template when there is
+     * one, the stock screen otherwise.
+     *
+     * @return string the rendered page
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
+     */
+    private function _renderLockScreen(): string
+    {
+        /** @var WebApplication $app */
+        $app = Craft::$app;
+
+        $settings = Lockout::$plugin->getSettings();
+        $view = $app->getView();
+
+        $variables = [
+            'headline' => $settings->getHeadline(),
+            'message' => $settings->getMessage(),
+        ];
+
+        // Custom templates belong to the site, not the control panel.
+        if ($settings->template !== null && $settings->template !== '') {
+            if ($view->doesTemplateExist($settings->template, View::TEMPLATE_MODE_SITE)) {
+                return $view->renderPageTemplate($settings->template, $variables, View::TEMPLATE_MODE_SITE);
+            }
+
+            Lockout::warning("Couldn’t find the Lockout template “{$settings->template}”; showing the stock lock screen instead.");
+        }
+
+        return $view->renderPageTemplate('lockout/_lock-screen', $variables, View::TEMPLATE_MODE_CP);
+    }
+
+    /**
+     * Answers the request with the lock screen and ends it.
+     *
+     * JSON requests — which the control panel makes constantly — get the
+     * exception instead, so Craft's error handler can answer in kind.
+     *
+     * @throws ForbiddenHttpException if the configured status code is 403
+     * @throws ServiceUnavailableHttpException if it's 503
+     * @throws ExitException if the lock screen was sent
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws Exception
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
+     */
+    private function _sendLockScreen(): void
+    {
+        /** @var WebApplication $app */
+        $app = Craft::$app;
+
+        $settings = Lockout::$plugin->getSettings();
+        $response = $app->getResponse();
+
+        // Mirrors what Craft sends when the system is offline.
+        if ($settings->statusCode === Settings::STATUS_CODE_UNAVAILABLE) {
+            $retryDuration = $app->getProjectConfig()->get('system.retryDuration');
+
+            if ($retryDuration) {
+                $response->getHeaders()->setDefault('Retry-After', $retryDuration);
+            }
+        }
+
+        if ($app->getRequest()->getAcceptsJson()) {
+            throw $settings->statusCode === Settings::STATUS_CODE_UNAVAILABLE
+                ? new ServiceUnavailableHttpException($settings->getMessage())
+                : new ForbiddenHttpException($settings->getMessage());
+        }
+
+        $response->setStatusCode($settings->statusCode);
+        $response->data = $this->_renderLockScreen();
+
+        $app->end();
+    }
 
     /**
      * Writes the environment's lockout flag.

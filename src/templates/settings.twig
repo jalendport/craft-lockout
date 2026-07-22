@@ -3,7 +3,19 @@
 
 {{ forms.textField({
 	first: true,
-	label: 'Error Message'|t('lockout'),
+	label: 'Headline'|t('lockout'),
+	instructions: 'The heading on the lock screen.'|t('lockout'),
+	placeholder: 'Control panel locked'|t('lockout'),
+	id: 'headline',
+	name: 'headline',
+	value: settings.headline,
+	disabled: 'headline' in overrides,
+	errors: settings.getErrors('headline'),
+	warning: base.configWarning('headline', 'lockout'),
+}) }}
+
+{{ forms.textField({
+	label: 'Message'|t('lockout'),
 	instructions: 'Shown to users who are locked out of the control panel.'|t('lockout'),
 	placeholder: 'Access to the control panel is temporarily restricted.'|t('lockout'),
 	id: 'message',
@@ -12,4 +24,28 @@
 	disabled: 'message' in overrides,
 	errors: settings.getErrors('message'),
 	warning: base.configWarning('message', 'lockout'),
+}) }}
+
+{{ forms.selectField({
+	label: 'Status Code'|t('lockout'),
+	instructions: 'The HTTP status locked-out requests are answered with. 503 also sends a `Retry-After` header, built from Craft’s Retry Duration setting.'|t('lockout'),
+	id: 'statusCode',
+	name: 'statusCode',
+	options: settings.getStatusCodeOptions(),
+	value: settings.statusCode,
+	disabled: 'statusCode' in overrides,
+	errors: settings.getErrors('statusCode'),
+	warning: base.configWarning('statusCode', 'lockout'),
+}) }}
+
+{{ forms.autosuggestField({
+	label: 'Template'|t('lockout'),
+	instructions: 'A site template to render in place of the lock screen. It’s handed `headline` and `message` variables. Leave empty for the stock screen.'|t('lockout'),
+	id: 'template',
+	name: 'template',
+	suggestions: craft.cp.getTemplateSuggestions(),
+	value: settings.template,
+	disabled: 'template' in overrides,
+	errors: settings.getErrors('template'),
+	warning: base.configWarning('template', 'lockout'),
 }) }}
