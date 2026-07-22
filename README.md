@@ -84,7 +84,7 @@ The presentation settings are available from Lockout's plugin settings in the co
 | --- | --- | --- |
 | Headline | `headline` | The heading shown to locked-out users. |
 | Message | `message` | The supporting message shown below the headline. |
-| Status code | `statusCode` | The HTTP status returned by the lock screen: `403` (Forbidden) or `503` (Service Unavailable). A 503 response also includes a `Retry-After` header. |
+| Status code | `statusCode` | The HTTP status returned by the lock screen: `403` (Forbidden) or `503` (Service Unavailable). A 503 response also includes a `Retry-After` header when Craft's [`retryDuration`](https://craftcms.com/docs/5.x/reference/config/general.html#retryduration) setting is configured. |
 | Custom template | `template` | An optional site template to render instead of Lockout's stock error page. |
 
 ### Overriding Plugin Settings
