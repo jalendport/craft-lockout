@@ -1,12 +1,25 @@
-<h1><img src="src/icon.svg" alt="icon" width="25" height="25" hspace="5">Lockout</h1>
+<p align="center"><img src="src/icon.svg" alt="Lockout" width="80" height="80"></p>
 
-_Temporarily lock certain users out of the control panel._
+<h1 align="center">Lockout</h1>
+
+Lockout is a Craft CMS plugin that temporarily restricts control panel access during deployments, content freezes, and structural changes. Its database-backed state survives project config application, while permissions and per-environment configuration determine who can enter and how locked-out requests respond.
+
+## Features
+
+- **Dedicated utility** — see whether Lockout is enabled, the active environment, and whether the state comes from the database or a config override, then toggle it from one place.
+- **Permission-based access** — grant users permission to manage Lockout or bypass it while everyone else remains locked out; administrators always retain access.
+- **Deployment-safe state** — the database-backed toggle survives `project-config/apply`, making it suitable for deployment scripts and content freezes.
+- **Environment overrides** — force Lockout on or off from `config/lockout.php`; an active override disables the utility toggle and clearly identifies its source.
+- **Custom lock screen** — set the headline and message, return either a 403 or 503 response, and optionally render your own template.
+- **CLI ready** — enable, disable, or inspect Lockout from deployment scripts, with status output that includes the effective state and its source.
 
 ## Installation
 
 ### Requirements
 
-This plugin requires Craft CMS 5.0.0 or later.
+This plugin requires **Craft CMS 5.0.0 or later** and **PHP 8.2 or later**.
+
+> Using Craft 4? Use the [2.x](https://github.com/jalendport/craft-lockout/tree/craft4) line, which is the Craft 4 release of this plugin.
 
 ### Plugin Store
 
@@ -26,49 +39,77 @@ cd /path/to/project
 composer require jalendport/craft-lockout
 ```
 
-3. In the Control Panel, go to Settings → Plugins and click the “Install” button for Lockout.
+3. In the Control Panel, go to Settings → Plugins and click the "Install" button for Lockout.
 
-## Using Lockout
+## Usage
 
-When Lockout is enabled, any non-admin users will be effectively blocked from accessing the CP. Useful if you ever need to make some structural changes and want to prevent new content from being added to the production DB during that time.
+### Managing Lockout
 
-### Settings
+Open Utilities → Lockout to see the effective state, active environment, and state source. Users with the **Manage Lockout** permission can enable or disable Lockout there; administrators have this permission implicitly.
 
-To enable Lockout, simply toggle the lightswitch. It's that simple!
+When `enabled` is set in `config/lockout.php`, the config value takes precedence over the database state. The utility identifies the override and disables its toggle until the override is removed.
 
-There is also a message setting where you can pass a custom message to the error screen your users will see when they are locked out.
+### Choosing Who Can Enter
 
-### Widget
+Lockout registers two permissions that can be assigned to users and user groups:
 
-![Widget UI](resources/img/widget.png)
+| Permission | Allows |
+| --- | --- |
+| **Manage Lockout** (`manageLockout`) | View the utility and enable or disable Lockout. |
+| **Bypass Lockout** (`bypassLockout`) | Continue using the control panel while Lockout is enabled. |
 
-In cases where you're using [Project Config](https://docs.craftcms.com/v3/project-config.html) and `allowAdminChanges` is set to `false` you won't be able to enable/disable Lockout via the plugin settings. Instead you'll want to add the Lockout widget to your CP dashboard - it provides the same functionality as the lightswitch on the plugin settings page.
+Administrators always bypass Lockout. Give **Bypass Lockout** to any user groups that should retain control panel access during a lockout; all other users are shown the configured lock screen.
 
 ### CLI
 
-Lockout also provides two console commands for use in your deployment scripts:
+Lockout provides three console commands for deployment scripts:
 
+```bash
+./craft lockout/lockout/enable
+./craft lockout/lockout/disable
+./craft lockout/lockout/status
 ```
-./craft lockout/lockout/enable      // Restrict non-admin users from accessing the CP.
 
-./craft lockout/lockout/disable     // Allow non-admin users to access the CP.
+The status command reports whether Lockout is enabled and whether the effective state comes from the database or a config override. It exits with `0` when locked and `1` when unlocked, so scripts can branch on the result.
+
+The enabled state is stored separately from project config, so it survives `project-config/apply` during a deployment. This avoids the state-reset behavior that can affect [`craft off`](https://github.com/craftcms/cms/issues/9855) when project config is reapplied.
+
+## Configuration
+
+### Settings
+
+The presentation settings are available from Lockout's plugin settings in the control panel:
+
+| Setting | Config key | Description |
+| --- | --- | --- |
+| Headline | `headline` | The heading shown to locked-out users. |
+| Message | `message` | The supporting message shown below the headline. |
+| Status code | `statusCode` | The HTTP status returned by the lock screen: `403` (Forbidden) or `503` (Service Unavailable). A 503 response also includes a `Retry-After` header. |
+| Custom template | `template` | An optional site template to render instead of Lockout's stock error page. |
+
+### Overriding Plugin Settings
+
+Create a [config file](https://craftcms.com/docs/5.x/configure.html#config-files) named `lockout.php` in your project's `config` folder to override Lockout's settings. The file is fully [multi-environment](https://craftcms.com/docs/5.x/configure.html#multi-environment-configs) aware, so each environment can have its own state and presentation. A commented template you can copy is included at [`src/config.php`](src/config.php).
+
+```php
+<?php
+
+return [
+    'enabled' => true, // true, false, or null to use the database state
+    'headline' => 'Maintenance in progress',
+    'message' => 'We’ll be back shortly.',
+    'statusCode' => 503,
+    'template' => 'errors/maintenance',
+];
 ```
 
-## Found a Bug? Need Support?
+Values declared in the config file override the corresponding control panel settings. For `enabled`, `true` forces Lockout on, `false` forces it off, and `null` uses the database-backed state managed by the utility or CLI.
 
-Please open an [issue](https://github.com/jalendport/craft-lockout/issues) describing what's going wrong.
+## Support
 
-## Roadmap
+Found a bug or need help? Open an [issue](https://github.com/jalendport/craft-lockout/issues).
 
-Some things to do, and ideas for potential features:
+<hr>
 
-* Provide the ability to customize which users are locked out or whitelisted.
-
-If there's a feature you think should be added to Lockout, please open an [issue](https://github.com/jalendport/craft-lockout/issues). PRs are also welcome!
-
-* * *
-
-### Contributors
-
- - Plugin development: [Jalen Davenport](jalendport.com) / @jalendport
- - Icon: [Kiran Joseph](https://thenounproject.com/term/lock/680647/) from the [Noun Project](https://thenounproject.com)
+<p align="center">Made by <a href="https://jalendport.com">Jalen Davenport</a></p>
+<p align="center">Lock icon by <a href="https://thenounproject.com/term/lock/680647/">Kiran Joseph</a> from the <a href="https://thenounproject.com">Noun Project</a></p>
