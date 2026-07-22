@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Added a Lockout utility that shows the effective state, active environment, state source, and toggle ([#4](https://github.com/jalendport/craft-lockout/issues/4))
-- Added `manageLockout` and `bypassLockout` permissions for controlling who can manage or bypass a lockout
+- Added `lockout:manage` and `lockout:bypass` permissions for controlling who can manage or bypass a lockout
 - Added an `enabled` config override for forcing the state per environment ([#1](https://github.com/jalendport/craft-lockout/issues/1))
 - Added customizable lock-screen headlines, 403 or 503 status responses, and custom templates ([#1](https://github.com/jalendport/craft-lockout/issues/1))
 - Added a `lockout/lockout/status` console command that reports the effective state and its source

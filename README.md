@@ -55,8 +55,8 @@ Lockout registers two permissions that can be assigned to users and user groups:
 
 | Permission | Allows |
 | --- | --- |
-| **Manage Lockout** (`manageLockout`) | View the utility and enable or disable Lockout. |
-| **Bypass Lockout** (`bypassLockout`) | Continue using the control panel while Lockout is enabled. |
+| **Manage Lockout** (`lockout:manage`) | View the utility and enable or disable Lockout. |
+| **Bypass Lockout** (`lockout:bypass`) | Continue using the control panel while Lockout is enabled. |
 
 Administrators always bypass Lockout. Give **Bypass Lockout** to any user groups that should retain control panel access during a lockout; all other users are shown the configured lock screen.
 
