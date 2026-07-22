@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## 3.0.0 - 2026-07-22
+
 ### Added
 
 - Added a Lockout utility that shows the effective state, active environment, state source, and toggle ([#4](https://github.com/jalendport/craft-lockout/issues/4))
@@ -17,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - Replaced the dashboard widget and settings-page toggle with the Lockout utility
+- Replaced the plugin icon
 
 ## 3.0.0-beta.2 - 2026-07-22
 
