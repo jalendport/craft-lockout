@@ -14,6 +14,7 @@ use Craft;
 use craft\web\Controller;
 use jalendport\base\controllers\WebControllerTrait;
 use jalendport\lockout\Lockout;
+use jalendport\lockout\services\LockoutService;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -33,17 +34,15 @@ class DisableController extends Controller
      *
      * @return Response|null
      * @throws BadRequestHttpException if the request isn't a POST accepting JSON
-     * @throws ForbiddenHttpException if the user isn't an admin
+     * @throws ForbiddenHttpException if the user can't manage Lockout
+     * @author Jalen Davenport <hello@jalendport.com>
      * @since 1.0.0
      */
     public function actionIndex(): ?Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
-
-        // false, not true: the toggle has to keep working when
-        // `allowAdminChanges` is off — that's the scenario this plugin is for.
-        $this->requireAdmin(false);
+        $this->requirePermission(LockoutService::PERMISSION_MANAGE);
 
         return $this->runAndReturn(static function(): void {
             if (!Lockout::$plugin->lockoutService->disable()) {

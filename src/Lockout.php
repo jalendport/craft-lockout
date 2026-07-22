@@ -14,13 +14,15 @@ use Craft;
 use craft\base\Model;
 use craft\console\Application as ConsoleApplication;
 use craft\events\RegisterComponentTypesEvent;
-use craft\services\Dashboard;
+use craft\events\RegisterUserPermissionsEvent;
+use craft\services\UserPermissions;
+use craft\services\Utilities;
 use craft\web\Application as WebApplication;
 use craft\web\Controller;
 use jalendport\base\Plugin;
 use jalendport\lockout\models\Settings;
 use jalendport\lockout\services\LockoutService;
-use jalendport\lockout\widgets\LockoutWidget;
+use jalendport\lockout\utilities\Lockout as LockoutUtility;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -96,8 +98,9 @@ class Lockout extends Plugin
             $this->controllerNamespace = 'jalendport\lockout\console\controllers';
         }
 
-        $this->_registerWidgets();
         $this->_registerCpGuard();
+        $this->_registerPermissions();
+        $this->_registerUtilities();
     }
 
     // Protected Methods
@@ -162,16 +165,45 @@ class Lockout extends Plugin
     }
 
     /**
+     * Registers the two permissions Lockout adds: one to work the toggle, one
+     * to be exempt from it. Assigning them to a user group is how you choose
+     * who gets locked out.
+     *
      * @author Jalen Davenport <hello@jalendport.com>
-     * @since 1.0.0
+     * @since 3.0.0
      */
-    private function _registerWidgets(): void
+    private function _registerPermissions(): void
     {
         Event::on(
-            Dashboard::class,
-            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+            UserPermissions::class,
+            UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            static function(RegisterUserPermissionsEvent $event): void {
+                $event->permissions[] = [
+                    'heading' => Craft::t('lockout', 'Lockout'),
+                    'permissions' => [
+                        LockoutService::PERMISSION_MANAGE => [
+                            'label' => Craft::t('lockout', 'Toggle Lockout'),
+                        ],
+                        LockoutService::PERMISSION_BYPASS => [
+                            'label' => Craft::t('lockout', 'Bypass Lockout'),
+                        ],
+                    ],
+                ];
+            }
+        );
+    }
+
+    /**
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
+     */
+    private function _registerUtilities(): void
+    {
+        Event::on(
+            Utilities::class,
+            Utilities::EVENT_REGISTER_UTILITIES,
             static function(RegisterComponentTypesEvent $event): void {
-                $event->types[] = LockoutWidget::class;
+                $event->types[] = LockoutUtility::class;
             }
         );
     }

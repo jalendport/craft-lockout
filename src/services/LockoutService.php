@@ -61,6 +61,26 @@ class LockoutService extends Component
     ];
 
     /**
+     * Lets a user stay in the control panel while Lockout is enabled.
+     *
+     * Admins always bypass, permission or not.
+     *
+     * The permission handles live here rather than on a controller: the manage
+     * permission is enforced by two web controllers, the utility, and the CLI,
+     * so no single controller owns it — this service does.
+     *
+     * @since 3.0.0
+     */
+    public const PERMISSION_BYPASS = 'lockout:bypass';
+
+    /**
+     * Lets a user toggle Lockout from the utility, the controllers, or the CLI.
+     *
+     * @since 3.0.0
+     */
+    public const PERMISSION_MANAGE = 'lockout:manage';
+
+    /**
      * The state is pinned by the `enabled` setting in `config/lockout.php`.
      *
      * @since 3.0.0
@@ -90,7 +110,7 @@ class LockoutService extends Component
     /**
      * Throws if the current user is locked out.
      *
-     * @return bool `false` when the user is free to continue
+     * @return bool `true` when the user bypasses Lockout, `false` when it's off
      * @throws ForbiddenHttpException if the user is locked out
      * @author Jalen Davenport <hello@jalendport.com>
      * @since 1.0.0
@@ -100,7 +120,9 @@ class LockoutService extends Component
         /** @var WebApplication $app */
         $app = Craft::$app;
 
-        if ($app->getUser()->getIsAdmin()) {
+        // checkPermission() already lets admins through; the explicit check
+        // keeps that guarantee if the permission is ever revoked or renamed.
+        if ($app->getUser()->getIsAdmin() || $app->getUser()->checkPermission(self::PERMISSION_BYPASS)) {
             return true;
         }
 

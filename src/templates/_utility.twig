@@ -1,0 +1,49 @@
+{% import '_includes/forms.twig' as forms %}
+{% import 'jalendport-base/_macros' as base %}
+
+{% set overridden = source == 'config' %}
+{% set locked = overridden or not canManage %}
+
+<div class="readable">
+	<p>
+		{{ enabled
+			? 'The control panel is locked. Only admins and users with the “Bypass Lockout” permission can get in.'|t('lockout')
+			: 'The control panel is open to everyone who can normally sign in.'|t('lockout') }}
+	</p>
+	<p>
+		{{ environment
+			? 'Lockout is stored per environment. This toggle applies to {environment}.'|t('lockout', {
+				environment: environment,
+			})
+			: 'Lockout is stored per environment. This one has no name; set CRAFT_ENVIRONMENT to tell your environments apart.'|t('lockout') }}
+	</p>
+</div>
+
+{{ forms.lightswitchField({
+	label: 'Lock the control panel'|t('lockout'),
+	id: 'lockout-enabled',
+	name: 'enabled',
+	on: enabled,
+	disabled: locked,
+	warning: overridden
+		? base.configWarning('enabled', 'lockout')
+		: (not canManage ? 'You don’t have permission to change this.'|t('lockout')),
+}) }}
+
+{% if not locked %}
+	{% js %}
+		$('#lockout-enabled').on('change', function() {
+			var action = $(this).hasClass('on') ? 'lockout/enable' : 'lockout/disable';
+
+			Craft.sendActionRequest('POST', action)
+				.then(function(response) {
+					Craft.cp.displayNotice(Craft.escapeHtml(response.data.message));
+				})
+				.catch(function(error) {
+					Craft.cp.displayError(Craft.escapeHtml(error.response.data.message));
+					// The switch and the stored state have diverged; start over.
+					location.reload();
+				});
+		});
+	{% endjs %}
+{% endif %}
