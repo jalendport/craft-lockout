@@ -83,7 +83,7 @@ class LockoutWidget extends Widget
         return Craft::$app->getView()->renderTemplate(
             'lockout/widgets/lockout',
             [
-                'localSettings' => Lockout::$plugin->getLocalSettings(),
+                'localSettings' => Lockout::$plugin->lockoutService->getLocalSettings(),
             ]
         );
     }

@@ -1,38 +1,15 @@
-{# @var craft \craft\web\twig\variables\CraftVariable #}
-{#
-/**
- * Lockout plugin for Craft CMS 5.x
- *
- * @author    Jalen Davenport
- * @copyright Copyright (c) 2019 Jalen Davenport
- * @link      https://jalendport.com
- * @package   Lockout
- * @since     1.0.0
- */
-#}
-
-{% import "_includes/forms" as forms %}
-
-{% macro configWarning(setting) -%}
-    {% set setting = '<code>' ~ setting ~ '</code>' %}
-    {{ "This is being overridden by the #{setting} config setting in your lockout.php config file."|raw }}
-{%- endmacro %}
-
-{{ forms.lightswitchField({
-    label: 'Enable Lockout?',
-    instructions: 'If this lightswitch is turned on, non-admin users will not be able to access the CP.',
-    id: 'enabled',
-    name: 'enabled',
-    on: localSettings.enabled
-}) }}
+{% import '_includes/forms.twig' as forms %}
+{% import 'jalendport-base/_macros' as base %}
 
 {{ forms.textField({
-    label: 'Error Message',
-    instructions: 'This message will be displayed when non-admin users try to login while Lockout is enabled.',
-    placeholder: 'Access to the control panel is temporarily restricted.',
-    id: 'message',
-    name: 'message',
-    value: settings.message,
-    disabled: 'message' in overrides,
-    warning: 'message' in overrides ? _self.configWarning('message'),
+	first: true,
+	label: 'Error Message'|t('lockout'),
+	instructions: 'Shown to users who are locked out of the control panel.'|t('lockout'),
+	placeholder: 'Access to the control panel is temporarily restricted.'|t('lockout'),
+	id: 'message',
+	name: 'message',
+	value: settings.message,
+	disabled: 'message' in overrides,
+	errors: settings.getErrors('message'),
+	warning: base.configWarning('message', 'lockout'),
 }) }}

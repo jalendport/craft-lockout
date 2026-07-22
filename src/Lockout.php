@@ -17,10 +17,8 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\services\Dashboard;
 use craft\web\Application as WebApplication;
 use craft\web\Controller;
-use craft\web\Request as WebRequest;
 use jalendport\base\Plugin;
 use jalendport\lockout\models\Settings;
-use jalendport\lockout\records\LocalSettings;
 use jalendport\lockout\services\LockoutService;
 use jalendport\lockout\widgets\LockoutWidget;
 use Twig\Error\LoaderError;
@@ -29,38 +27,51 @@ use Twig\Error\SyntaxError;
 use yii\base\ActionEvent;
 use yii\base\Event;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
- * @author    Jalen Davenport
- * @package   Lockout
- * @since     1.0.0
+ * Lockout plugin.
  *
- * @property  LocalSettings $localSettings
- * @property  Settings $settings
- * @property  LockoutService $lockoutService
+ * @property-read LockoutService $lockoutService
+ * @method Settings getSettings()
+ * @author Jalen Davenport <hello@jalendport.com>
+ * @since 1.0.0
  */
 class Lockout extends Plugin
 {
+    // Static Properties
+    // =========================================================================
+
     /**
-     * @var Lockout
+     * @var Lockout The plugin instance.
+     * @since 1.0.0
      */
-    public static $plugin;
+    public static Lockout $plugin;
+
+    // Public Properties
+    // =========================================================================
 
     /**
      * @var bool Whether the plugin has a settings page in the control panel.
+     * @since 1.0.0
      */
     public bool $hasCpSettings = true;
 
     /**
      * @var string The plugin's schema version.
+     * @since 1.0.0
      */
-    public string $schemaVersion = '1.0.0';
+    public string $schemaVersion = '3.0.0';
 
+    // Public Methods
+    // =========================================================================
 
     /**
      * Registers the plugin's components per the Craft 5 plugin spec.
      *
      * @return array<string, mixed>
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
      */
     public static function config(): array
     {
@@ -71,9 +82,10 @@ class Lockout extends Plugin
         ];
     }
 
-
     /**
      * @inheritdoc
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 1.0.0
      */
     public function init(): void
     {
@@ -85,64 +97,48 @@ class Lockout extends Plugin
         }
 
         $this->_registerWidgets();
-        $this->_registerSettingsHooks();
         $this->_registerCpGuard();
     }
 
+    // Protected Methods
+    // =========================================================================
 
     /**
-     * @return LocalSettings
-     */
-    public function getLocalSettings(): LocalSettings
-    {
-        $lockoutRecord = LocalSettings::findOne([
-            'environment' => Craft::$app->getConfig()->env,
-        ]);
-
-        if ($lockoutRecord === null) {
-            $lockoutRecord = new LocalSettings();
-        }
-
-        $lockoutRecord->environment = Craft::$app->getConfig()->env;
-
-        return $lockoutRecord;
-    }
-
-
-    /**
-     * @return Model|null
+     * @inheritdoc
+     * @throws InvalidConfigException if the settings model can't be created
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 1.0.0
      */
     protected function createSettingsModel(): ?Model
     {
-        return new Settings();
+        return Craft::createObject(Settings::class);
     }
 
-
     /**
-     * @return string|null
+     * @inheritdoc
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws Exception
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 1.0.0
      */
     protected function settingsHtml(): ?string
     {
         $settings = $this->getSettings();
         $settings->validate();
 
-        $localSettings = $this->getLocalSettings();
-        $localSettings->validate();
-
         /** @var WebApplication $app */
         $app = Craft::$app;
 
         return $app->getView()->renderTemplate('lockout/settings', [
             'settings' => $settings,
-            'localSettings' => $localSettings,
             'overrides' => $this->getConfigOverrides(),
         ]);
     }
 
+    // Private Methods
+    // =========================================================================
 
     /**
      * Blocks locked-out users from the CP.
@@ -150,6 +146,9 @@ class Lockout extends Plugin
      * This hangs off the controller's before-action event rather than `init()`:
      * throwing from `init()` fires on *every* CP request, logout included, so a
      * locked-out user could never sign out.
+     *
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
      */
     private function _registerCpGuard(): void
     {
@@ -162,41 +161,10 @@ class Lockout extends Plugin
         );
     }
 
-
     /**
-     * Mirrors the settings-page lightswitch into the environment-local record,
-     * which is where the enabled flag actually lives.
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 1.0.0
      */
-    private function _registerSettingsHooks(): void
-    {
-        Event::on(
-            __CLASS__,
-            self::EVENT_BEFORE_SAVE_SETTINGS,
-            static function(): void {
-                $request = Craft::$app->getRequest();
-
-                // Programmatic saves have no body to read the lightswitch from;
-                // leave the current state alone rather than disabling it.
-                if (!$request instanceof WebRequest) {
-                    return;
-                }
-
-                $settings = $request->getBodyParam('settings');
-
-                if (!is_array($settings) || !array_key_exists('enabled', $settings)) {
-                    return;
-                }
-
-                if ($settings['enabled']) {
-                    self::$plugin->lockoutService->enable();
-                } else {
-                    self::$plugin->lockoutService->disable();
-                }
-            }
-        );
-    }
-
-
     private function _registerWidgets(): void
     {
         Event::on(

@@ -1,30 +1,28 @@
 <?php
 /**
- * Lockout plugin for Craft CMS 5.x
- *
- * Temporarily lock certain users out of the control panel.
- *
- * @link      https://jalendport.com
- * @copyright Copyright (c) 2019 Jalen Davenport
- */
-
-/**
  * Lockout config.php
  *
- * This file exists only as a template for the Lockout settings.
- * It does nothing on its own.
+ * This file exists only as a template. Don't edit it directly — copy it to your
+ * project's `config/` folder, rename it to `lockout.php`, and make your changes
+ * there. Any setting you leave out falls back to the value configured on the
+ * plugin's settings page.
  *
- * Don't edit this file, instead copy it to 'craft/config' as 'lockout.php'
- * and make your changes there to override default settings.
+ * The file is fully multi-environment aware.
  *
- * Once copied to 'craft/config', this file will be multi-environment aware as
- * well, so you can have different settings groups for each environment, just as
- * you do for 'general.php'
+ * @see https://craftcms.com/docs/5.x/configure.html#config-files
  */
 
 return [
+    // Whether the control panel is locked. Use null (or omit the setting
+    // entirely) to leave the decision to the per-environment flag the Lockout
+    // utility and the `lockout/lockout` commands write to. Setting true or
+    // false pins the state — the utility's toggle is disabled while it does.
+    //
+    // Handy for committing a lockout to version control, or for driving one
+    // from an env var: 'enabled' => App::env('LOCKOUT_ENABLED').
+    'enabled' => null,
 
-    // This message will be displayed when non-admin users try to login while Lockout is enabled.
+    // The message shown to locked-out users. Leave empty for the default,
+    // "Access to the control panel is temporarily restricted."
     'message' => '',
-
 ];

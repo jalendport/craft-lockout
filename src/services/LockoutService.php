@@ -12,20 +12,30 @@ namespace jalendport\lockout\services;
 
 use Craft;
 use craft\base\Component;
+use craft\helpers\Json;
 use craft\web\Application as WebApplication;
 use craft\web\Request as WebRequest;
 use jalendport\lockout\Lockout;
-use jalendport\lockout\models\Settings;
+use jalendport\lockout\records\LocalSettings;
 use yii\base\Action;
 use yii\web\ForbiddenHttpException;
 
 /**
- * @author    Jalen Davenport
- * @package   Lockout
- * @since     1.0.0
+ * Resolves and mutates the lockout state.
+ *
+ * State lives in two places: a per-environment database flag (what the utility
+ * and the CLI write to) and an optional `enabled` setting in
+ * `config/lockout.php`. A non-null config value always wins — see
+ * {@see getIsEnabled()}.
+ *
+ * @author Jalen Davenport <hello@jalendport.com>
+ * @since 1.0.0
  */
 class LockoutService extends Component
 {
+    // Const Properties
+    // =========================================================================
+
     /**
      * @var string[] Actions that stay reachable while Lockout is enabled.
      *
@@ -51,6 +61,60 @@ class LockoutService extends Component
     ];
 
     /**
+     * The state is pinned by the `enabled` setting in `config/lockout.php`.
+     *
+     * @since 3.0.0
+     */
+    public const SOURCE_CONFIG = 'config';
+
+    /**
+     * The state comes from the environment's database flag.
+     *
+     * @since 3.0.0
+     */
+    public const SOURCE_DB = 'db';
+
+    // Private Properties
+    // =========================================================================
+
+    /**
+     * @var LocalSettings|null The memoized record for the current environment.
+     * @see getLocalSettings()
+     * @since 3.0.0
+     */
+    private ?LocalSettings $_localSettings = null;
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * Throws if the current user is locked out.
+     *
+     * @return bool `false` when the user is free to continue
+     * @throws ForbiddenHttpException if the user is locked out
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 1.0.0
+     */
+    public function check(): bool
+    {
+        /** @var WebApplication $app */
+        $app = Craft::$app;
+
+        if ($app->getUser()->getIsAdmin()) {
+            return true;
+        }
+
+        if (!$this->getIsEnabled()) {
+            return false;
+        }
+
+        $message = Lockout::$plugin->getSettings()->message
+            ?: Craft::t('lockout', 'Access to the control panel is temporarily restricted.');
+
+        throw new ForbiddenHttpException($message);
+    }
+
+    /**
      * Blocks the given CP action if the current user is locked out.
      *
      * Runs off `Controller::EVENT_BEFORE_ACTION` rather than the plugin's
@@ -59,6 +123,7 @@ class LockoutService extends Component
      *
      * @param Action $action the action about to run
      * @throws ForbiddenHttpException if the user is locked out
+     * @author Jalen Davenport <hello@jalendport.com>
      * @since 3.0.0
      */
     public function checkAction(Action $action): void
@@ -84,52 +149,120 @@ class LockoutService extends Component
         $this->check();
     }
 
-
     /**
-     * @return bool
-     * @throws ForbiddenHttpException
-     */
-    public function check(): bool
-    {
-        /** @var WebApplication $app */
-        $app = Craft::$app;
-
-        if ($app->getUser()->getIsAdmin()) {
-            return true;
-        }
-
-        $localSettings = Lockout::$plugin->getLocalSettings();
-        /** @var Settings $settings */
-        $settings = Lockout::$plugin->getSettings();
-
-        $message = $settings->message ?: Craft::t('lockout', 'Access to the control panel is temporarily restricted.');
-
-        if ($localSettings->enabled) {
-            throw new ForbiddenHttpException($message);
-        }
-
-        return false;
-    }
-
-
-    /**
-     * @return bool
-     */
-    public function enable(): bool
-    {
-        $lockoutRecord = Lockout::$plugin->getLocalSettings();
-        $lockoutRecord->enabled = true;
-        return $lockoutRecord->save();
-    }
-
-
-    /**
-     * @return bool
+     * Clears the lockout flag for the current environment.
+     *
+     * @return bool whether the flag was saved
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 1.0.0
      */
     public function disable(): bool
     {
-        $lockoutRecord = Lockout::$plugin->getLocalSettings();
-        $lockoutRecord->enabled = false;
-        return $lockoutRecord->save();
+        return $this->_saveEnabled(false);
+    }
+
+    /**
+     * Sets the lockout flag for the current environment.
+     *
+     * @return bool whether the flag was saved
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 1.0.0
+     */
+    public function enable(): bool
+    {
+        return $this->_saveEnabled(true);
+    }
+
+    /**
+     * Returns the state pinned by `config/lockout.php`, or `null` when the
+     * config file leaves the decision to the database flag.
+     *
+     * @return bool|null the pinned state
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
+     */
+    public function getConfigOverride(): ?bool
+    {
+        if (!in_array('enabled', Lockout::$plugin->getConfigOverrides(), true)) {
+            return null;
+        }
+
+        return Lockout::$plugin->getSettings()->enabled;
+    }
+
+    /**
+     * Returns whether Lockout is currently enabled, config override included.
+     *
+     * @return bool whether the CP is locked
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
+     */
+    public function getIsEnabled(): bool
+    {
+        return $this->getConfigOverride() ?? (bool)$this->getLocalSettings()->enabled;
+    }
+
+    /**
+     * Returns the current environment's record, creating an unsaved one when
+     * the environment hasn't been locked before.
+     *
+     * Memoized: the state is read on every CP request, and once per request is
+     * enough.
+     *
+     * @return LocalSettings the environment's record
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
+     */
+    public function getLocalSettings(): LocalSettings
+    {
+        if ($this->_localSettings !== null) {
+            return $this->_localSettings;
+        }
+
+        $environment = (string)Craft::$app->getConfig()->env;
+
+        $record = LocalSettings::findOne(['environment' => $environment]) ?? new LocalSettings();
+        $record->environment = $environment;
+
+        return $this->_localSettings = $record;
+    }
+
+    /**
+     * Returns where the current state came from, so the utility and the CLI can
+     * explain themselves.
+     *
+     * @return string one of the `SOURCE_` constants
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
+     */
+    public function getSource(): string
+    {
+        return $this->getConfigOverride() !== null ? self::SOURCE_CONFIG : self::SOURCE_DB;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Writes the environment's lockout flag.
+     *
+     * @param bool $enabled the state to store
+     * @return bool whether the record saved
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 3.0.0
+     */
+    private function _saveEnabled(bool $enabled): bool
+    {
+        $record = $this->getLocalSettings();
+        $record->enabled = $enabled;
+
+        if (!$record->save()) {
+            $errors = Json::encode($record->getErrors());
+            Lockout::error("Couldn’t save the Lockout state: {$errors}");
+
+            return false;
+        }
+
+        return true;
     }
 }

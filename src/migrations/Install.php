@@ -12,72 +12,55 @@ namespace jalendport\lockout\migrations;
 
 use Craft;
 use craft\db\Migration;
+use jalendport\lockout\records\LocalSettings;
 
 /**
- * @author    Jalen Davenport
- * @package   Lockout
- * @since     1.0.0
+ * Installation migration.
+ *
+ * @author Jalen Davenport <hello@jalendport.com>
+ * @since 1.0.0
  */
 class Install extends Migration
 {
-    /**
-     * @return bool
-     */
-    public function safeUp(): bool
-    {
-        if ($this->createTables()) {
-            // Refresh the db schema caches
-            Craft::$app->db->schema->refresh();
-        }
-
-        return true;
-    }
-
+    // Public Methods
+    // =========================================================================
 
     /**
-     * @return bool
+     * @inheritdoc
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 1.0.0
      */
     public function safeDown(): bool
     {
-        $this->removeTables();
+        $this->dropTableIfExists(LocalSettings::tableName());
 
         return true;
     }
 
-
     /**
-     * @return bool
+     * @inheritdoc
+     * @author Jalen Davenport <hello@jalendport.com>
+     * @since 1.0.0
      */
-    protected function createTables(): bool
+    public function safeUp(): bool
     {
-        $tablesCreated = false;
-
-        $tableSchema = Craft::$app->db->schema->getTableSchema('{{%lockout}}');
-        if ($tableSchema === null) {
-            $tablesCreated = true;
-
-            $this->createTable(
-                '{{%lockout}}',
-                [
-                      'id' => $this->primaryKey(),
-                    'environment' => $this->string()->notNull()->defaultValue(''),
-                    'enabled' => $this->boolean()->notNull()->defaultValue(false),
-                    'dateCreated' => $this->dateTime()->notNull(),
-                    'dateUpdated' => $this->dateTime()->notNull(),
-                    'uid' => $this->uid(),
-                ]
-            );
+        if (Craft::$app->getDb()->tableExists(LocalSettings::tableName())) {
+            return true;
         }
 
-        return $tablesCreated;
-    }
+        $this->createTable(LocalSettings::tableName(), [
+            'id' => $this->primaryKey(),
+            'environment' => $this->string()->notNull()->defaultValue(''),
+            'enabled' => $this->boolean()->notNull()->defaultValue(false),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
 
+        // One row per environment — the state is looked up by environment, and
+        // duplicates would make which row wins a coin toss.
+        $this->createIndex(null, LocalSettings::tableName(), ['environment'], true);
 
-    /**
-     * @return void
-     */
-    protected function removeTables(): void
-    {
-        $this->dropTableIfExists('{{%lockout}}');
+        return true;
     }
 }
