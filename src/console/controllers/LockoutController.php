@@ -10,7 +10,9 @@
 
 namespace jalendport\lockout\console\controllers;
 
+use jalendport\base\controllers\ConsoleControllerTrait;
 use jalendport\lockout\Lockout;
+use yii\base\Exception;
 use yii\console\Controller;
 
 /**
@@ -22,24 +24,40 @@ use yii\console\Controller;
  */
 class LockoutController extends Controller
 {
+    use ConsoleControllerTrait;
+
     /**
      * Restrict non-admin users from accessing the CP.
      *
-     * @return bool
+     * @return int the exit code
+     * @since 1.0.0
      */
-    public function actionEnable(): bool
+    public function actionEnable(): int
     {
-        return (int)Lockout::$plugin->lockoutService->enable();
+        return $this->runAndExit(function(): void {
+            if (!Lockout::$plugin->lockoutService->enable()) {
+                throw new Exception('Couldn’t enable Lockout.');
+            }
+
+            $this->writeSuccess('Lockout enabled.');
+        });
     }
 
 
     /**
      * Allow non-admin users to access the CP.
      *
-     * @return bool
+     * @return int the exit code
+     * @since 1.0.0
      */
-    public function actionDisable(): bool
+    public function actionDisable(): int
     {
-        return (int)Lockout::$plugin->lockoutService->disable();
+        return $this->runAndExit(function(): void {
+            if (!Lockout::$plugin->lockoutService->disable()) {
+                throw new Exception('Couldn’t disable Lockout.');
+            }
+
+            $this->writeSuccess('Lockout disabled.');
+        });
     }
 }

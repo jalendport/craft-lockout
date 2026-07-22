@@ -10,8 +10,14 @@
 
 namespace jalendport\lockout\controllers;
 
+use Craft;
 use craft\web\Controller;
+use jalendport\base\controllers\WebControllerTrait;
 use jalendport\lockout\Lockout;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
+use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * @author    Jalen Davenport
@@ -20,11 +26,29 @@ use jalendport\lockout\Lockout;
  */
 class DisableController extends Controller
 {
+    use WebControllerTrait;
+
     /**
-     * @return bool
+     * Allows non-admin users to access the CP.
+     *
+     * @return Response|null
+     * @throws BadRequestHttpException if the request isn't a POST accepting JSON
+     * @throws ForbiddenHttpException if the user isn't an admin
+     * @since 1.0.0
      */
-    public function actionIndex(): bool
+    public function actionIndex(): ?Response
     {
-        return Lockout::$plugin->lockoutService->disable();
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        // false, not true: the toggle has to keep working when
+        // `allowAdminChanges` is off — that's the scenario this plugin is for.
+        $this->requireAdmin(false);
+
+        return $this->runAndReturn(static function(): void {
+            if (!Lockout::$plugin->lockoutService->disable()) {
+                throw new ServerErrorHttpException(Craft::t('lockout', 'Couldn’t disable Lockout.'));
+            }
+        }, Craft::t('lockout', 'Lockout disabled.'));
     }
 }
