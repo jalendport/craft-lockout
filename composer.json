@@ -1,6 +1,6 @@
 {
     "name": "jalendport/craft-lockout",
-    "description": "Temporarily lock certain users out of the control panel.",
+    "description": "Deploy-safe control panel lockouts for Craft CMS, with bypass permissions and a custom lock screen.",
     "type": "craft-plugin",
     "keywords": [
         "craft",
