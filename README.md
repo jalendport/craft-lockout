@@ -112,4 +112,3 @@ Found a bug or need help? Open an [issue](https://github.com/jalendport/craft-lo
 <hr>
 
 <p align="center">Made by <a href="https://jalendport.com">Jalen Davenport</a></p>
-<p align="center">Lock icon by <a href="https://thenounproject.com/term/lock/680647/">Kiran Joseph</a> from the <a href="https://thenounproject.com">Noun Project</a></p>
