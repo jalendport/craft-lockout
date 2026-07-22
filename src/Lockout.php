@@ -21,7 +21,7 @@ use craft\web\Application as WebApplication;
 use craft\web\Controller;
 use jalendport\base\Plugin;
 use jalendport\lockout\models\Settings;
-use jalendport\lockout\services\LockoutService;
+use jalendport\lockout\services\Lockout as LockoutService;
 use jalendport\lockout\utilities\Lockout as LockoutUtility;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -34,7 +34,7 @@ use yii\base\InvalidConfigException;
 /**
  * Lockout plugin.
  *
- * @property-read LockoutService $lockoutService
+ * @property-read LockoutService $lockout
  * @method Settings getSettings()
  * @author Jalen Davenport <hello@jalendport.com>
  * @since 1.0.0
@@ -60,6 +60,13 @@ class Lockout extends Plugin
     public bool $hasCpSettings = true;
 
     /**
+     * @var string The oldest version this one can be updated from. The 3.0
+     * migrations assume the 2.x table shape.
+     * @since 3.0.0
+     */
+    public string $minVersionRequired = '2.0.0';
+
+    /**
      * @var string The plugin's schema version.
      * @since 1.0.0
      */
@@ -79,7 +86,7 @@ class Lockout extends Plugin
     {
         return [
             'components' => [
-                'lockoutService' => LockoutService::class,
+                'lockout' => LockoutService::class,
             ],
         ];
     }
@@ -159,7 +166,7 @@ class Lockout extends Plugin
             Controller::class,
             Controller::EVENT_BEFORE_ACTION,
             static function(ActionEvent $event): void {
-                self::$plugin->lockoutService->checkAction($event->action);
+                self::$plugin->lockout->checkAction($event->action);
             }
         );
     }

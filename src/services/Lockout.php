@@ -17,7 +17,7 @@ use craft\web\Application as WebApplication;
 use craft\web\Request as WebRequest;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\View;
-use jalendport\lockout\Lockout;
+use jalendport\lockout\Lockout as LockoutPlugin;
 use jalendport\lockout\models\Settings;
 use jalendport\lockout\records\LocalSettings;
 use Twig\Error\LoaderError;
@@ -39,7 +39,7 @@ use yii\web\ForbiddenHttpException;
  * @author Jalen Davenport <hello@jalendport.com>
  * @since 1.0.0
  */
-class LockoutService extends Component
+class Lockout extends Component
 {
     // Const Properties
     // =========================================================================
@@ -194,11 +194,11 @@ class LockoutService extends Component
      */
     public function getConfigOverride(): ?bool
     {
-        if (!in_array('enabled', Lockout::$plugin->getConfigOverrides(), true)) {
+        if (!in_array('enabled', LockoutPlugin::$plugin->getConfigOverrides(), true)) {
             return null;
         }
 
-        return Lockout::$plugin->getSettings()->enabled;
+        return LockoutPlugin::$plugin->getSettings()->enabled;
     }
 
     /**
@@ -294,7 +294,7 @@ class LockoutService extends Component
         /** @var WebApplication $app */
         $app = Craft::$app;
 
-        $settings = Lockout::$plugin->getSettings();
+        $settings = LockoutPlugin::$plugin->getSettings();
         $view = $app->getView();
 
         $variables = [
@@ -308,7 +308,7 @@ class LockoutService extends Component
                 return $view->renderPageTemplate($settings->template, $variables, View::TEMPLATE_MODE_SITE);
             }
 
-            Lockout::warning("Couldn’t find the Lockout template “{$settings->template}”; showing the stock lock screen instead.");
+            LockoutPlugin::warning("Couldn’t find the Lockout template “{$settings->template}”; showing the stock lock screen instead.");
         }
 
         return $view->renderPageTemplate('lockout/_lock-screen', $variables, View::TEMPLATE_MODE_CP);
@@ -335,7 +335,7 @@ class LockoutService extends Component
         /** @var WebApplication $app */
         $app = Craft::$app;
 
-        $settings = Lockout::$plugin->getSettings();
+        $settings = LockoutPlugin::$plugin->getSettings();
         $response = $app->getResponse();
 
         // Mirrors what Craft sends when the system is offline.
@@ -374,7 +374,7 @@ class LockoutService extends Component
 
         if (!$record->save()) {
             $errors = Json::encode($record->getErrors());
-            Lockout::error("Couldn’t save the Lockout state: {$errors}");
+            LockoutPlugin::error("Couldn’t save the Lockout state: {$errors}");
 
             return false;
         }

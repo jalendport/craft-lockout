@@ -14,7 +14,7 @@ use Craft;
 use craft\console\Controller;
 use jalendport\base\controllers\ConsoleControllerTrait;
 use jalendport\lockout\Lockout;
-use jalendport\lockout\services\LockoutService;
+use jalendport\lockout\services\Lockout as LockoutService;
 use yii\base\Exception;
 use yii\console\ExitCode;
 
@@ -53,7 +53,7 @@ class LockoutController extends Controller
     public function actionDisable(): int
     {
         return $this->runAndExit(function(): void {
-            if (!Lockout::$plugin->lockoutService->disable()) {
+            if (!Lockout::$plugin->lockout->disable()) {
                 throw new Exception('Couldn’t disable Lockout.');
             }
 
@@ -72,7 +72,7 @@ class LockoutController extends Controller
     public function actionEnable(): int
     {
         return $this->runAndExit(function(): void {
-            if (!Lockout::$plugin->lockoutService->enable()) {
+            if (!Lockout::$plugin->lockout->enable()) {
                 throw new Exception('Couldn’t enable Lockout.');
             }
 
@@ -93,7 +93,7 @@ class LockoutController extends Controller
      */
     public function actionStatus(): int
     {
-        $service = Lockout::$plugin->lockoutService;
+        $service = Lockout::$plugin->lockout;
         $source = $service->getSource() === LockoutService::SOURCE_CONFIG
             ? 'config/lockout.php'
             : 'the database';
@@ -132,7 +132,7 @@ class LockoutController extends Controller
      */
     private function _warnIfOverridden(): void
     {
-        $override = Lockout::$plugin->lockoutService->getConfigOverride();
+        $override = Lockout::$plugin->lockout->getConfigOverride();
 
         if ($override === null) {
             return;

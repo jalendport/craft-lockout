@@ -14,25 +14,34 @@ use Craft;
 use craft\web\Controller;
 use jalendport\base\controllers\WebControllerTrait;
 use jalendport\lockout\Lockout;
-use jalendport\lockout\services\LockoutService;
+use jalendport\lockout\services\Lockout as LockoutService;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
 /**
- * @author    Jalen Davenport
- * @package   Lockout
- * @since     1.0.0
+ * Turns Lockout on.
+ *
+ * Kept as its own controller so the 2.x `lockout/enable` route still works.
+ *
+ * @author Jalen Davenport <hello@jalendport.com>
+ * @since 1.0.0
  */
 class EnableController extends Controller
 {
+    // Traits
+    // =========================================================================
+
     use WebControllerTrait;
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * Restricts non-admin users from accessing the CP.
      *
-     * @return Response|null
+     * @return Response|null the response
      * @throws BadRequestHttpException if the request isn't a POST accepting JSON
      * @throws ForbiddenHttpException if the user can't manage Lockout
      * @author Jalen Davenport <hello@jalendport.com>
@@ -45,7 +54,7 @@ class EnableController extends Controller
         $this->requirePermission(LockoutService::PERMISSION_MANAGE);
 
         return $this->runAndReturn(static function(): void {
-            if (!Lockout::$plugin->lockoutService->enable()) {
+            if (!Lockout::$plugin->lockout->enable()) {
                 throw new ServerErrorHttpException(Craft::t('lockout', 'Couldn’t enable Lockout.'));
             }
         }, Craft::t('lockout', 'Lockout enabled.'));

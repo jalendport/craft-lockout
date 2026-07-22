@@ -14,7 +14,7 @@ use Craft;
 use craft\base\Utility;
 use craft\web\Application as WebApplication;
 use jalendport\lockout\Lockout as LockoutPlugin;
-use jalendport\lockout\services\LockoutService;
+use jalendport\lockout\services\Lockout as LockoutService;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -49,7 +49,7 @@ class Lockout extends Utility
         /** @var WebApplication $app */
         $app = Craft::$app;
 
-        $service = LockoutPlugin::$plugin->lockoutService;
+        $service = LockoutPlugin::$plugin->lockout;
 
         return $app->getView()->renderTemplate('lockout/_utility', [
             'canManage' => $app->getUser()->checkPermission(LockoutService::PERMISSION_MANAGE),
